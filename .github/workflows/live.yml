@@ -1,0 +1,25 @@
+# Real-time JalDrishti: every 15 min fetch radar + rain, run EPA SWMM + 2D, publish to GitHub Pages.
+# Setup: push this project to a GitHub repo, then Settings -> Pages -> Source: GitHub Actions.
+name: live-nowcast
+on:
+  schedule: [{ cron: '*/15 * * * *' }]
+  workflow_dispatch: {}
+permissions: { contents: read, pages: write, id-token: write }
+concurrency: { group: live, cancel-in-progress: false }
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    environment: { name: github-pages }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11', cache: pip }
+      - run: pip install numpy scipy pandas pyproj pillow swmm-toolkit numba
+      - name: Build site
+        run: |
+          mkdir -p site && cp dashboard/index.html site/index.html
+          python pipeline/live_cycle.py site
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - uses: actions/deploy-pages@v4
