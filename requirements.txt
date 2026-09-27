@@ -1,0 +1,11 @@
+fastapi>=0.110
+uvicorn>=0.29
+numpy>=1.26
+scipy>=1.11
+# pipeline only
+swmm-toolkit>=0.15
+xarray
+netCDF4
+pyproj
+pandas
+networkx
