@@ -1,5 +1,5 @@
 # 🌊 JalDrishti AI
-###jaldrishti-ai-flood-nowcasting.vercel.app
+jaldrishti-ai-flood-nowcasting.vercel.app
 ### Street-Level Urban Flood Nowcasting System (0–3 Hours)
 
 **JalDrishti AI** is a real-time, street-level urban flood nowcasting system designed to predict **where flooding will occur before it happens**.
