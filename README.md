@@ -1,399 +1,584 @@
-# 🌧️ JalDrishti AI
+# 🌊 JalDrishti AI
 
-### Urban Flood Nowcasting through Rainfall–Runoff–Drainage Coupling
+### Street-Level Urban Flood Nowcasting System (0–3 Hours)
 
-> **From rainfall forecasts to street-level flood-risk intelligence.**
+**JalDrishti AI** is a real-time, street-level urban flood nowcasting system designed to predict **where flooding will occur before it happens**.
 
-[![Smart India Hackathon 2026](https://img.shields.io/badge/Smart%20India%20Hackathon-2026-blue)]()
-[![Problem Statement](https://img.shields.io/badge/SIH26085-Urban%20Flood%20Nowcasting-0A66C2)]()
-[![Domain](https://img.shields.io/badge/Domain-Disaster%20Management-orange)]()
-[![Prototype Area](https://img.shields.io/badge/Prototype-Velachery%2C%20Chennai-teal)]()
+The system combines rainfall nowcasting, high-resolution terrain data, urban drainage networks, hydraulic simulation, 2D surface-water modelling, and flood-aware route planning to provide predictions up to **3 hours ahead**.
 
----
-
-## 📌 Overview
-
-**JalDrishti AI** is an urban flood nowcasting prototype developed for **SIH26085 — Urban Flood Nowcasting System (Drainage and Rainfall Coupling)** under the Ministry of Earth Sciences (MoES).
-
-The system addresses a key limitation of rainfall-only flood forecasting:
-
-> **Rainfall alone does not determine where an urban flood will occur.**
-
-JalDrishti AI couples:
-
-**Rainfall → Runoff → Drainage Network → Effective Capacity → Segment-Level Flood Risk**
-
-The prototype focuses on **Velachery, Chennai**, with upstream contributing areas included for inflow modeling.
+> **"Don't just know where it is flooded — know which roads will be flooded by the time you reach them."**
 
 ---
 
-## 🎯 Problem Statement
 
-### SIH26085 — Urban Flood Nowcasting System (Drainage and Rainfall Coupling)
 
-**Ministry:** Ministry of Earth Sciences (MoES)
-**Theme:** Disaster Management
-**Category:** Software
+## 🚨 Problem
 
-Traditional rainfall forecasts indicate how much rain may occur, but they do not directly identify which streets or drainage segments are likely to become waterlogged.
+Urban flooding is highly localized. Knowing how much rain will fall does not tell us which particular streets or intersections will flood.
 
-Urban flooding is influenced by:
+Flooding depends on:
 
-* rainfall intensity and duration
-* local elevation and terrain
-* impervious surfaces
-* upstream inflow
-* drainage-network structure
-* drainage bottlenecks
-* historically recurring waterlogging
+* 🌧️ Rainfall intensity and movement
+* 🗺️ Micro-topography and elevation
+* 🏙️ Impervious urban surfaces
+* 🚧 Drainage capacity and blockages
+* 🌊 River/sea backwater effects
+* 🚗 Traffic and road accessibility
 
-JalDrishti AI models these factors together.
+Traditional weather forecasts therefore cannot provide reliable **street-level flood information**.
+
+JalDrishti AI addresses this gap by coupling **rainfall + terrain + drainage + surface flow + routing** into a single pipeline.
 
 ---
 
-## 💡 Solution
+## 🎯 Key Objectives
+
+* Predict street-level flooding **0–3 hours in advance**
+* Estimate water depth for individual road segments
+* Model urban drainage capacity and surcharge
+* Simulate surface-water movement
+* Identify potentially blocked or overloaded drainage
+* Provide flood-safe routes for different vehicle types
+* Provide APIs for navigation and emergency services
+* Display real-time flood information through a web GIS dashboard
+
+---
+
+## 🧠 How It Works
 
 ```text
-IMD Rainfall / Nowcast
-          ↓
-Rainfall Processing
-          ↓
-SCS-CN Rainfall → Runoff
-          ↓
-Drainage Network Graph
-          ↓
-Predicted Flow vs Effective Capacity
-          ↓
-Interpretable ML Risk Model
-          ↓
-Segment-Level Flood Risk
-          ↓
-Maps & Alerts
-```
-
----
-
-## 🧠 Core Technical Approach
-
-### 1. Physics-Based Runoff
-
-The **SCS Curve Number (SCS-CN)** methodology is used to estimate rainfall excess and runoff based on rainfall and land-surface characteristics.
-
-### 2. Drainage Network Graph
-
-The stormwater drainage system is represented as a **directed graph**:
-
-```text
-Small Drains
-     ↓
-Feeder Drains
-     ↓
-Main / Arterial Drains
-     ↓
-Outfall
-```
-
-This represents the directional movement of water through the drainage network.
-
-### 3. Effective Capacity Inference
-
-Real-time information about drain blockage, underground pipe condition, pump status, and continuous drain sensors is not available for the prototype.
-
-Instead, **effective drainage capacity is inferred from historical flood recurrence**.
-
-Locations that repeatedly experience flooding under comparatively lower rainfall conditions can indicate reduced effective drainage capacity.
-
-### 4. Interpretable Machine Learning
-
-A lightweight model such as **Logistic Regression or XGBoost** is used to learn relationships between rainfall/runoff conditions and historical flood occurrence.
-
-Potential features include:
-
-* rainfall intensity
-* rainfall duration
-* antecedent rainfall
-* runoff estimate
-* land-use characteristics
-* drainage segment
-* historical flood occurrence
-
-### Core principle
-
-> **Physics predicts what should happen; machine learning learns what actually happens under real-world drainage conditions.**
-
----
-
-## 🗺️ Study Area
-
-### Velachery, Chennai
-
-The prototype focuses on **Velachery and upstream contributing areas**.
-
-The drainage network is modeled as a connected system rather than treating Velachery as an isolated location.
-
-```text
-Upstream Areas
+Rainfall Radar
       ↓
-Drainage Network
+Rainfall Nowcasting
       ↓
-Velachery
+Rainfall → Runoff
       ↓
-Downstream / Outfall
+EPA SWMM Drainage Model
+      ↓
+Drain Overflow / Surcharge
+      ↓
+2D Surface Water Flow
+      ↓
+Road-Level Water Depth
+      ↓
+Flood Risk Assessment
+      ↓
+Time-Dependent Routing
+      ↓
+Dashboard + API + Alerts
 ```
-
----
-
-## 📊 Data Sources
-
-| Data Source                  | Purpose                    |
-| ---------------------------- | -------------------------- |
-| GCC Stormwater Drain KML/KMZ | Drainage-network structure |
-| IMD rainfall data            | Historical rainfall        |
-| IMD nowcasting information   | Short-range rainfall input |
-| SRTM / Bhuvan DEM            | Elevation and terrain      |
-| Sentinel-2 / Bhuvan          | Land-use information       |
-| Historical flood reports     | Flood occurrence           |
-| Cyclone Michaung data        | Historical backtest        |
-| Published drainage reports   | Basin and drainage context |
-| SCS-CN methodology           | Rainfall-runoff estimation |
-
----
-
-## 🌊 Cyclone Michaung Backtest
-
-The primary historical proof-of-concept event is:
-
-### Cyclone Michaung — December 2023
-
-Historical rainfall can be replayed through the pipeline as if it were arriving sequentially.
-
-```text
-Historical Rainfall
-        ↓
-JalDrishti AI
-        ↓
-Predicted Risk Segments
-        ↓
-Reported Flooded Locations
-        ↓
-Predicted vs Observed Comparison
-```
-
-The validation is treated as an **event-based historical backtest**, not as proof of universal model accuracy.
-
-Performance metrics such as precision, recall, and spatial agreement should only be reported after the actual validation pipeline produces them.
-
----
-
-## 🚦 Risk Classification
-
-| Risk Level | Meaning                  | Action                       |
-| ---------- | ------------------------ | ---------------------------- |
-| 🟢 Low     | Low immediate flood risk | Monitor                      |
-| 🟡 Medium  | Increasing flood risk    | Notify ward officials        |
-| 🔴 High    | High flood risk          | Public alert / response flag |
-
-The system is designed to provide both:
-
-### Public View
-
-Simple location-based warnings such as:
-
-> **Avoid this road — high flood risk expected.**
-
-### Official View
-
-Detailed information including:
-
-* drainage segments
-* predicted risk
-* rainfall conditions
-* runoff
-* upstream contribution
-* inferred effective capacity
-* affected locations
 
 ---
 
 ## 🏗️ System Architecture
 
+### 1. 🌧️ Rainfall Data
+
+The system uses:
+
+* Doppler radar rainfall data
+* RainViewer radar composites
+* Open-Meteo historical/forecast rainfall
+* NASA GPM IMERG data for historical replay
+
+Radar frames are converted from **dBZ → rainfall intensity** and used for short-term extrapolation.
+
+---
+
+### 2. 🔮 Rainfall Nowcasting
+
+An optical-flow based approach estimates the movement of rainfall cells.
+
 ```text
-                    ┌──────────────────────┐
-                    │  IMD Rainfall Data   │
-                    │ Historical / Nowcast │
-                    └──────────┬───────────┘
-                               ↓
-                    ┌──────────────────────┐
-                    │ Rainfall Processing  │
-                    │ Intensity / Duration │
-                    │ Antecedent Rainfall  │
-                    └──────────┬───────────┘
-                               ↓
-                    ┌──────────────────────┐
-                    │     SCS-CN Model     │
-                    │   Rainfall → Runoff  │
-                    └──────────┬───────────┘
-                               ↓
-              ┌───────────────────────────────┐
-              │    Drainage Network Graph     │
-              │                               │
-              │ Upstream → Feeder → Main     │
-              │              → Outfall        │
-              └──────────────┬────────────────┘
-                             ↓
-              ┌───────────────────────────────┐
-              │ Effective Capacity Inference  │
-              │ Historical Flood Recurrence   │
-              └──────────────┬────────────────┘
-                             ↓
-              ┌───────────────────────────────┐
-              │   Interpretable ML Model      │
-              │ Logistic Regression / XGBoost │
-              └──────────────┬────────────────┘
-                             ↓
-              ┌───────────────────────────────┐
-              │     Segment-Level Risk        │
-              │       Low / Medium / High     │
-              └──────────────┬────────────────┘
-                             ↓
-              ┌───────────────────────────────┐
-              │       Dashboard & Alerts      │
-              └───────────────────────────────┘
+Radar Frame T-1
+      ↓
+Radar Frame T
+      ↓
+Motion Estimation
+      ↓
+Optical Flow
+      ↓
+Rainfall Extrapolation
+      ↓
+0–180 Minute Forecast
+```
+
+A persistence model is also used as a baseline for comparison.
+
+---
+
+### 3. 🚰 Drainage Network Modelling
+
+The urban stormwater network is represented as a directed graph:
+
+* **Nodes → Manholes / inlets**
+* **Edges → Drains / conduits**
+
+The hydraulic system is simulated using **EPA SWMM 5.2**.
+
+Current model:
+
+* 4,896 drainage nodes
+* 4,869 drainage edges
+* 403 outfalls
+* Manning's roughness coefficient: 0.013
+
+The model calculates drainage capacity, surcharge and flooding.
+
+---
+
+### 4. 🗺️ Terrain Modelling
+
+The surface model uses **Copernicus GLO-30 DEM** combined with available Chennai survey elevation data.
+
+The model includes:
+
+* Elevation correction
+* Road burning
+* Urban terrain
+* Building obstacles
+* Low-lying areas
+
+The resulting terrain is used to determine how water flows across the city.
+
+---
+
+### 5. 🌊 2D Surface Water Flow
+
+A diffusion-wave based model simulates water movement across a **30 m grid**.
+
+The model determines:
+
+* Water accumulation
+* Flow direction
+* Flood extent
+* Water depth
+* Low-lying flood zones
+
+The current implementation uses a one-way coupling from drainage overflow to surface water.
+
+---
+
+### 6. 🚗 Flood-Safe Routing
+
+JalDrishti AI uses **time-dependent routing** instead of simply avoiding roads that are currently flooded.
+
+A road is evaluated based on the water depth expected **when the vehicle reaches that road**.
+
+Supported vehicle categories include:
+
+| Vehicle        | Water-depth limit |
+| -------------- | ----------------: |
+| 🚶 Walking     |             10 cm |
+| 🛵 Two-wheeler |             15 cm |
+| 🛺 Auto        |             20 cm |
+| 🚗 Car         |             25 cm |
+| 🚑 Ambulance   |             30 cm |
+| 🚌 MTC Bus     |             40 cm |
+
+The system can generate safer alternatives for commuters, emergency services and public transport.
+
+---
+
+# 🖥️ Dashboard
+
+The web GIS dashboard provides:
+
+* 🗺️ Street and satellite map views
+* 🌊 Flood extent visualization
+* 📏 Road water-depth estimation
+* 🌧️ Rainfall nowcast
+* 🚰 Drainage status
+* ⚠️ Flood alerts
+* 🏥 Hospital accessibility
+* 🚇 Subway closure information
+* 🚌 Bus diversion information
+* 🚗 Flood-safe routing
+* 📊 City-level flood statistics
+* 🔄 Historical flood-event replay
+* 🔬 Multiple simulation scenarios
+
+### Simulation Scenarios
+
+```text
+Nowcast
+Persistence
+Culvert Blocked
+River Backwater
+Hindsight
+Historical Events
 ```
 
 ---
 
-## 🆚 What Makes JalDrishti AI Different?
+# ⚙️ Technology Stack
 
-JalDrishti AI is **not intended to replace existing government flood-warning systems**.
+### Backend / Simulation
 
-It focuses on a more localized decision-support problem:
+* Python
+* NumPy
+* SciPy
+* Pandas
+* Numba
+* Rasterio
+* PyProj
+* EPA SWMM 5.2
+* swmm-toolkit
 
-```text
-Rainfall Forecast
-      ↓
-How much rain?
-      ↓
-JalDrishti AI
-      ↓
-Where is the drainage system
-likely to become stressed?
-      ↓
-Which segment should be flagged?
-```
+### API
 
-The key distinction is the coupling of:
+* FastAPI
+* Uvicorn
+* GeoJSON
+* CAP 1.2 alerts
 
-**Rainfall + Runoff + Drainage Network + Effective Capacity + Historical Flood Recurrence**
+### Frontend
 
-for **segment-level flood-risk intelligence**.
+* HTML
+* JavaScript
+* Canvas
+* GIS map layers
+* Esri tiles
+* OpenStreetMap data
+
+### Automation
+
+* GitHub Actions
+* 15-minute scheduled processing
 
 ---
 
-## ⚠️ Data & Deployment Limitations
+# 📡 API
 
-The prototype does not claim access to:
+The system provides APIs for applications and navigation systems.
 
-* live municipal drain sensors
-* live blockage sensors
-* underground pipe-condition monitoring
-* live pump telemetry
-* complete municipal SCADA infrastructure
+### Route
+
+```http
+GET /route?from=lat,lon&to=lat,lon&vehicle=amb&depart=0
+```
+
+### Flood Closures
+
+```http
+GET /closures?t=60&vehicle=car
+```
+
+Returns GeoJSON road closures.
+
+### Flood Depth
+
+```http
+GET /nowcast/depth?t=90&bbox=...
+```
+
+### Point Forecast
+
+```http
+GET /point?lat=...&lon=...
+```
+
+Returns the predicted 3-hour flood-depth series.
+
+### Drainage Status
+
+```http
+GET /drains/status?t=60
+```
+
+### Alerts
+
+```http
+GET /alerts
+```
+
+Returns CAP 1.2 alert information.
+
+### Bus Diversions
+
+```http
+GET /bus/diversions
+```
+
+### Live Rainfall
+
+```http
+GET /live/rain
+```
+
+---
+
+# 📊 Results
+
+The system was evaluated using historical Chennai rainfall and flood-event replays.
+
+### Cyclone Michaung — December 2023
+
+* **33.2 km²** predicted under >15 cm water at +3 hours
+* Optical-flow flood-cell CSI: **0.90**
+* Persistence baseline CSI: **0.85**
+* Optical-flow depth error: **3.8 cm**
+* Persistence depth error: **4.8 cm**
+
+### Rainfall Nowcasting
+
+For selected heavy-rainfall days from 2021–2026:
+
+* Optical-flow +3h rainfall error: **2.83 mm/h**
+* Persistence error: **3.39 mm/h**
+
+### Runtime
+
+```text
+SWMM simulation      ≈ 7 minutes
+2D surface model     ≈ 2.5 minutes
+Full live cycle      ≈ 4–11 minutes
+```
+
+The target is a **15-minute operational cycle**.
+
+---
+
+# 🕒 Historical Event Replay
+
+The system supports replay of multiple Chennai flood events:
+
+| Event                | Flooded area >15 cm @ +180 min |
+| -------------------- | -----------------------------: |
+| 2021 Deep Depression |                       43.2 km² |
+| Cyclone Mandous 2022 |                       19.9 km² |
+| October 2024 Event   |                       12.2 km² |
+| Cyclone Fengal 2024  |                       29.7 km² |
+| December 2025 Event  |                       17.9 km² |
+
+---
+
+# 🗃️ Datasets
+
+The project uses multiple public and open datasets.
+
+| Dataset                       | Purpose                          |
+| ----------------------------- | -------------------------------- |
+| GCC Storm Water Drain Network | Drainage modelling               |
+| GCC Ward Survey Sheets        | Elevation & drainage information |
+| NASA GPM IMERG                | Historical rainfall              |
+| Open-Meteo / ERA5             | Historical & forecast rainfall   |
+| RainViewer                    | Live radar                       |
+| Copernicus GLO-30             | Terrain / DEM                    |
+| OpenStreetMap                 | Roads & buildings                |
+| Chennai Ward Boundaries       | Administrative mapping           |
+| EPA SWMM 5.2                  | Hydraulic simulation             |
+
+---
+
+# 🔬 Validation
+
+### Completed
+
+* Rainfall nowcast vs hindsight comparison
+* Terrain holdout validation
+* Historical event replay
+
+### Planned
+
+Field validation using:
+
+* Flood-depth observations
+* Flood-meter cameras
+* Citizen reports
+* GCC complaints
+* Geotagged flood photographs
+
+The current system does **not yet include field-observed street water depths**.
+
+---
+
+# ⚠️ Current Limitations
+
+The current prototype has several limitations:
+
+* Radar archives are not publicly available for all historical events
+* Terrain resolution is approximately 30 m rather than 1–5 m LiDAR
+* Drainage data currently covers 107 of 200 wards
+* Drain-to-surface coupling is currently one-way
+* MTC routes are approximated because GTFS data is not publicly available
+* Field validation has not yet been completed
 
 These limitations are explicitly considered in the system design.
 
-The effective capacity component is therefore treated as an **inferred parameter**, not a direct measurement of physical pipe condition.
+---
+
+# 🚀 Future Scope
+
+Future development includes:
+
+* 📡 Direct IMD radar integration
+* 🔮 Ensemble rainfall nowcasting using PySTEPS
+* 🛰️ 1–5 m LiDAR DEM
+* 🚰 Complete Chennai drainage network
+* 🔄 Two-way drainage/surface coupling
+* 📹 Camera-based flood detection
+* 📞 1913 complaint integration
+* 🗣️ Tamil + English alerts
+* 📱 SMS / cell-broadcast integration
+* 🚌 MTC GTFS integration
+* 🤖 Improved blockage detection
 
 ---
 
-## 🌊 Tidal Backwater
+# 🌍 Potential Applications
 
-Chennai's drainage outfalls can be influenced by tidal conditions.
-Tidal backwater/surcharge is therefore considered a technically relevant factor.
-However, it is treated as a **conceptual future extension** unless a validated dataset and implementation are available.
+JalDrishti AI can support:
+
+* 🏛️ Municipal disaster-management control rooms
+* 🚑 Ambulance services
+* 🚒 Fire & rescue teams
+* 🚔 Traffic police
+* 🚌 Public transportation
+* 🚗 Daily commuters
+* 🏥 Emergency hospital access
+* 🚧 Road-closure planning
+* 🌧️ Flood preparedness
+
+The architecture can also be adapted to other Indian cities when suitable drainage and terrain datasets are available.
 
 ---
 
-## 📈 Scalability
-The same processing pipeline can be adapted to additional wards where suitable drainage, rainfall, terrain, and historical flood data are available.
+# 🎯 Impact
+
+JalDrishti AI aims to shift urban flood management from:
 
 ```text
-New Ward
-   +
-Drainage Data
-   +
-Rainfall Data
-   +
-Flood History
-   +
-DEM / Land Use
-        ↓
-Same Processing Pipeline
+Reactive
+   ↓
+"Water is already on the road"
 ```
 
-The current prototype remains focused on **Velachery and its upstream contributing areas** rather than claiming immediate pan-India deployment.
-## 🛠️ Technology Stack
+to:
 
-### Data & Geospatial
-* Python
-* Pandas
-* GeoPandas
-* GIS
-* NetworkX
+```text
+Predictive
+   ↓
+"This road is expected to flood in 60 minutes"
+```
 
-### Hydrology
-* SCS Curve Number methodology
-* Rainfall-runoff estimation
+This can enable authorities and emergency services to act before flooding reaches critical levels.
 
-### Machine Learning
-* Scikit-learn
-* Logistic Regression
-* XGBoost
+---
 
-### Visualization
+# 🔐 Legal & Ethics
 
-* Interactive maps
-* Flood-risk overlays
-* Alert visualization
+* The system provides decision-support information; official public warnings remain the responsibility of authorized authorities.
+* No personal data is collected by the system.
+* OpenStreetMap data follows the ODbL license.
+* Reclaim Chennai datasets are used under their stated license.
+* Copernicus and NASA datasets follow their respective data policies.
 
-### Development
-* Git
-* GitHub
-* VS Code
+---
+
+# 👥 Team
+
+### JalDrishti AI
+
+**Annasaheb Dange College of Engineering and Technology, Ashta**
+
+Team members:
+
+* Arpita Surve
+* Parth Lande
+* Sharvil Ghatge
+* Shravani Chougule
+* Shreya Shete
+* Amruta More
+
+### Smart India Hackathon 2026
+
+**Problem Statement:** 26085
+**Organization:** Ministry of Earth Sciences (MoES)
+**Department:** National Centre for Medium Range Weather Forecasting (NCMRWF)
+**Category:** Software
+**Theme:** Disaster Management
+
+---
+
+# 📁 Project Structure
+
+```text
+JalDrishti-AI/
+│
+├── backend/
+│   ├── api/
+│   ├── routing/
+│   └── services/
+│
+├── models/
+│   ├── rainfall/
+│   ├── swmm/
+│   ├── terrain/
+│   └── surface_flow/
+│
+├── data/
+│   ├── rainfall/
+│   ├── terrain/
+│   ├── drainage/
+│   └── roads/
+│
+├── frontend/
+│   ├── index.html
+│   ├── css/
+│   └── js/
+│
+├── notebooks/
+│
+├── tests/
+│
+├── requirements.txt
+├── README.md
+└── LICENSE
+```
+
+> Update the structure above to match the actual folders in your GitHub repository.
+
+---
+
+# ⭐ Why JalDrishti AI?
+
+JalDrishti AI brings multiple components together into one operational pipeline:
+
+**Rainfall → Nowcast → Runoff → Drainage → Surface Flow → Road Depth → Routing → Alerts**
+
+Instead of only showing existing flood conditions, the system focuses on **forecasting future street-level flooding and helping people choose safer routes before they reach the flooded road.**
+
+---
 
 ## 📚 References
 
-1. Smart India Hackathon 2026 — SIH26085, *Urban Flood Nowcasting System (Drainage and Rainfall Coupling)*, Ministry of Earth Sciences.
-2. Greater Chennai Corporation — Stormwater Drain Department, ward-wise drainage information and KML/KMZ datasets.
-3. Asian Development Bank — Environmental Monitoring Report, Chennai.
-4. Greater Chennai Corporation — Missing Links Stormwater Drain EIA Report.
-5. India Meteorological Department — Historical rainfall records and rainfall nowcasting information.
-6. ISRO Bhuvan / SRTM — Digital Elevation Model and geospatial datasets.
-7. OpenCity Chennai — Public stormwater-drain datasets.
-8. USDA Natural Resources Conservation Service — Curve Number rainfall-runoff methodology.
+* EPA Storm Water Management Model (SWMM)
+* NASA GPM IMERG
+* Copernicus GLO-30 DEM
+* OpenStreetMap
+* Open-Meteo
+* RainViewer
+* GCC Storm Water Drainage Survey
+* Reclaim Chennai
+* C-FLOWS
+* IMD SWIRLS
+* PySTEPS
 
 ---
 
-# 👥 Team — JalDrishti AI
+## 📜 License
 
-| Role                    | Responsibility                                      |
-| ----------------------- | --------------------------------------------------- |
-| Data Lead               | KML, rainfall and historical data collection        |
-| Model A                 | Rainfall-runoff modeling and drainage graph         |
-| Model B                 | Capacity inference and flood-risk model             |
-| Backend / Integration   | Pipeline and system integration                     |
-| Frontend / Dashboard    | Maps, visualization and alerts                      |
-| Domain Research / Pitch | Research, documentation and evaluator communication |
+Add your project's license here, for example:
+
+```text
+MIT License
+```
 
 ---
 
-## 🎯 Objective
-JalDrishti AI aims to bridge the gap between:
-**City-scale rainfall forecasting**
-and
-**Street-level flood-risk intelligence.**
-> **The question is not only how much rain will fall — but where that rainfall is most likely to overwhelm the urban drainage system.**
----
-### 🌧️ JalDrishti AI
+## ⭐ Support the Project
 
-**Smarter Drainage • Safer Cities**
+If you find **JalDrishti AI** useful, consider giving the repository a ⭐ on GitHub.
+
+**Built for safer, smarter and more resilient cities. 🌧️🌊🏙️**
